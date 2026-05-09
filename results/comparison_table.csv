@@ -1,0 +1,8 @@
+config,size,n_episodes,mean_coverage,std_coverage,min_coverage,max_coverage,full_coverage_rate
+5x5 (approved),5x5,200,0.9905,0.0692,0.2727,1.0,0.955
+10x10 (approved),10x10,200,0.9722,0.1089,0.0795,1.0,0.74
+15x15 (approved),15x15,200,0.9279,0.1648,0.1111,1.0,0.245
+20x20 (approved),20x20,200,0.8703,0.219,0.0085,1.0,0.06
+20x20 bigtwenty easy (16 obs),20x20,200,0.9758,0.053,0.3255,1.0,0.06
+20x20 bigtwenty medium (32 obs),20x20,200,0.9025,0.1367,0.1304,1.0,0.02
+20x20 bigtwenty hard (48 obs),20x20,200,0.8315,0.2259,0.0142,1.0,0.015
