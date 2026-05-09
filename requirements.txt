@@ -1,7 +1,13 @@
-gymnasium
-numpy
-typing
-stable-baselines3
-pygame
-tensorboard
-seaborn
+# Targeted at Python 3.11 (recommended).
+# 3.13 has known frictions with the SB3 ecosystem on Windows.
+
+gymnasium==0.29.1
+stable-baselines3==2.3.2
+sb3-contrib==2.3.0        # for RecurrentPPO (PPO + LSTM, used for partial obs)
+torch==2.3.1
+numpy>=1.24,<2.0
+pygame-ce==2.5.0          # pygame-ce instead of pygame on modern Python
+tensorboard>=2.14
+seaborn>=0.13
+tqdm>=4.66
+rich>=13.7                # used by progress_bar=True in SB3

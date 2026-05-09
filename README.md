@@ -1,176 +1,140 @@
-# Criando ambientes customizados usando a biblioteca Gymnasium
+# Coverage Path Planning - APS Reinforcement Learning (Insper)
 
-O objetivo deste repositório é fornecer alguns exemplos de ambientes customizados criados 
-usando a biblioteca Gymnasium. 
+Solução para o desafio de Coverage Path Planning (CPP) em GridWorld customizado, usando **RecurrentPPO + LSTM** com **transfer learning** entre tamanhos via curriculum.
 
-Você pode usar este arquivo README.md como um handout para entender como implementar ambientes customizados e como utilizá-los.
+> **Relatório completo:** [`RELATORIO.md`](./RELATORIO.md)
 
-## Instalação
+## Resultados (200 episódios deterministicos por configuração)
 
-Para começar a usar este repositório você precisa clonar o repositório e instalar as dependências necessárias. Você pode fazer isso usando os seguintes comandos depois de clonar o repositório:
+| Tamanho | Obstáculos | Mean Coverage | Std | Full Coverage |
+|---|---|---|---|---|
+| **5x5** | 3 | **99.05%** | ±6.92% | 95.5% |
+| **10x10** | 12 | **97.22%** | ±10.89% | 74.0% |
+| **15x15** | 27 | **92.79%** | ±16.48% | 24.5% |
+| **20x20** | 48 | **87.03%** | ±21.90% | 6.0% |
 
-```bash
-python -m venv venv # para criar um ambiente virtual
-source venv/bin/activate # para ativar o ambiente virtual
-pip install -r requirements.txt # para instalar as dependências
+5x5 e 10x10 atingem o objetivo do enunciado (cobertura próxima de 100%). O 20x20 com 48 obstáculos (12% de densidade) plateauiza em 87.03% — análise detalhada em `RELATORIO.md`.
+
+## Setup
+
+### Python 3.11 (recomendado)
+
+O ecossistema Stable-Baselines3 + Gymnasium tem fricção real em Python 3.13/3.14 no Windows.
+
+```powershell
+# Windows PowerShell
+py -3.11 -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-## Primeiro exemplo: ambiente GridWorld sem renderização
-
-O primeiro exemplo é um ambiente simples de grid world. O agente pode se mover para cima, baixo, esquerda ou direita. O objetivo do agente é chegar ao objetivo (goal) o mais rápido possível. O ambiente é definido na classe `GridWorldEnv` que está no arquivo `grid_world.py` dentro da pasta `gymnasium_env`. 
-
-O código deste arquivo é baseado no tutorial disponível em [https://gymnasium.farama.org/introduction/create_custom_env/](https://gymnasium.farama.org/introduction/create_custom_env/). Este código tem todos os métodos necessários para criar um ambiente: `__init__`, `reset` e `step`. Só não tem o médoto `render` que é responsável por mostrar visualmente o ambiente.  
-
-Os arquivos listados abaixo utilizam o ambiente `GridWorldEnv`: 
-
-* `run_grid_world_v0.py`: registra o ambiente e executa um episódio, onde o comportamento do agente é aleatório.
-* `run_grid_world_v0_wrapper.py`: utiliza a mesma base de código do arquivo anterior, além disso, faz uso de um wrapper para modificar a forma como o estado é retornado pelo ambiente e tratado pelo agente. 
-
-**Questão**: Qual é a diferença entre o estado retornado pelo ambiente e o estado retornado pelo ambiente com o uso do wrapper? O que cada variável representa?
-
-* `train_grid_world_v0.py`: faz uso do algoritmo PPO da biblioteca Stable Baselines3 para treinar um agente para atuar no ambiente `GridWorldEnv`. 
-
-**Proposta**: 
-
-* Execute o comando:
-
 ```bash
-python train_grid_world_render_v0.py train
-```
-
-* Visualize a curva de aprendizado usando o plugin do tensorboard com os dados armazenados na pasta `log`. 
-
-* Execute diversas vezes o comando: 
-
-```bash
-python train_grid_world_render_v0.py test
-```
-
-para visualizar se o agente aprendeu a melhor política. 
-
-
-## Segundo exemplo: ambiente GridWorld com renderização
-
-O segundo exemplo é o mesmo ambiente de grid world, mas agora a implementação do ambiente tem o método `render` que mostra visualmente o ambiente. A implementação deste ambiente está no arquivo `grid_world_render.py` dentro da pasta `gymnasium_env`.
-
-Os arquivos que utilizam o ambiente `GridWorldEnv` com renderização são:
-
-* `run_grid_world_render_v0.py`: registra o ambiente e executa um episódio, onde o comportamento do agente é aleatório.
-* `run_grid_world_render_v0_wrapper.py`: utiliza a mesma base de código do arquivo anterior, além disso, faz uso de um wrapper para modificar a forma como o estado é retornado pelo ambiente e tratado pelo agente.
-* `train_grid_world_render_v0.py`: faz uso do algoritmo PPO da biblioteca Stable Baselines3 para treinar um agente para atuar no ambiente `GridWorldEnv` com renderização.
-
-Este último arquivo tem um código mais completo, pois o agente é treinado para atuar em um ambiente que tem uma representação visual, o modelo treinado é salvo e depois carregado para fazer uma execução do ambiente. Os dados sobre o treinamento do agente são salvos para depois serem utilizados pelo `tensorboard`.
-
-## Terceiro exemplo: ambiente GridWorld em 3D
-
-O terceiro exemplo é uma extensão do ambiente de grid world para um ambiente 3D. O agente pode se mover para cima, baixo, esquerda, direita, frente e trás. O objetivo do agente é chegar ao objetivo (goal) o mais rápido possível. O ambiente é definido na classe `GridWorldEnv` que está no arquivo `grid_world_3D.py` dentro da pasta `gymnasium_env`.
-
-O arquivo que utiliza o ambiente `GridWorldEnv` em 3D é:
-* `train_grid_world_3D.py`: faz uso do algoritmo PPO da biblioteca Stable Baselines3 para treinar um agente para atuar no ambiente `GridWorldEnv` em 3D.
-
-Existem 3 (três) formas de uso do script `train_grid_world_3D.py`:
-* `python train_grid_world_3D.py train`: treina o agente e salva o modelo treinado na pasta `data` e os logs na pasta `log`.    
-* `python train_grid_world_3D.py test`: carrega o modelo treinado e executa 100 episódios, calculando o percentual de sucesso do agente, entre outras métricas.
-* `python train_grid_world_3D.py run`: carrega o modelo treinado e executa um único episódio, mostrando a renderização do ambiente 3D.
-
-Para que a renderização deste ambiente aconteça, é necessário ter a biblioteca `tkinter` instalada. No Ubuntu, você pode instalar esta biblioteca com o comando:
-
-```bash
-sudo apt-get install python3-tk
-```
-
-**Importante**: esta renderização 3D foi testada apenas no sistema operacional Ubuntu.
-
-
-## Quarto exemplo: ambiente GridWorld com obstáculos
-
-O quarto exemplo é uma extensão do ambiente de grid world para incluir obstáculos. O agente deve navegar pelo ambiente evitando os obstáculos para alcançar o objetivo. O ambiente é definido na classe `GridWorldEnv` que está no arquivo `grid_world_obstacles.py` dentro da pasta `gymnasium_env`.
-
-Para executar o treinamento do agente no ambiente com obstáculos, execute o comando:
-
-```bash
-python train_grid_world_obstacles.py train
-```
-
-Para testar o agente treinado no ambiente com obstáculos, execute o comando:
-
-```bash
-python train_grid_world_obstacles.py test
-```
-
-Esta funcionalidade irá executar o agente treinado em 100 episódios e calcular o percentual de sucesso do agente, entre outras métricas. 
-
-Também é possível executar o agente treinado em um único episódio, para isso execute o comando:
-
-```bash
-python train_grid_world_obstacles.py run
-```
-
-## Uso do ambiente GridWorld para problemas de Coverage Path Planning
-
-**Sugestão**: considerando a última versão do ambiente GridWorld, com renderização e obstáculos, altere a função de *reward* e o que mais for necessário para que o agente aprenda a fazer *Coverage Path Planning* (CPP) em um ambiente 2D com obstáculos.
-
----
-
-## Uso do ambiente GridWorld para Coverage Path Planning (CPP)
-
-> Esta seção substitui a proposta original da última seção do README.
-
-### Função de Reward Original (`grid_world_obstacles.py`)
-
-O ambiente original recompensa o agente por **chegar a um alvo fixo** o mais rápido possível:
-
-| Evento | Reward |
-|---|---|
-| Agente alcança o alvo | `+10.0` |
-| Cada passo executado | `(dist_anterior - dist_atual) - 0.1` |
-| Timeout (max_steps atingido) | `-10.0` |
-
-A componente `(dist_anterior - dist_atual)` é um *shaping reward* baseado na distância Manhattan/Euclidiana até o alvo, o que incentiva o agente a se aproximar do objetivo. Esta função é adequada para tarefas de **navegação ponto a ponto**, mas não incentiva exploração ou cobertura do grid.
-
----
-
-### Nova Função de Reward para CPP (`grid_world_cpp.py`)
-
-Inspirada nos trabalhos:
-- Theile et al. (2020) — *A Deep Reinforcement Learning Approach for the Patrolling Problem of Water Resources Through ASVs*
-- Survey on Coverage Path Planning for Mobile Robots in Dynamic Environments (2025)
-
-O agente deve **cobrir todas as células acessíveis** do grid (sem obstáculos). Não existe mais um alvo fixo. Em vez disso, o estado inclui um mapa binário de células visitadas, e o episódio termina com sucesso quando 100% das células acessíveis forem visitadas.
-
-| Evento | Reward |
-|---|---|
-| Move para uma célula **nova** (não visitada) | `+1.0` |
-| Move para uma célula **já visitada** (revisita) | `-0.5` |
-| Penalidade de passo (a cada step) | `-0.05` |
-| Bônus de **cobertura total** (100% das células) | `+10.0` |
-| Timeout sem cobertura total | `-5.0` |
-
-A recompensa positiva por novas células incentiva exploração; a penalidade por revisita desincentiva caminhos redundantes; o bônus de cobertura total reforça o objetivo final.
-
-#### Como executar
-
-```bash
-# 1. Criar e ativar o ambiente virtual (primeira vez)
-python -m venv venv
+# Linux/macOS
+python3.11 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-
-# 2. Testar o ambiente com agente aleatório (com renderização)
-python run_grid_world_cpp.py
-
-# 3. Testar sem renderização (mais rápido, só métricas no terminal)
-python run_grid_world_cpp.py headless
-
-# 4. Treinar o agente PPO
-python train_grid_world_cpp.py train
-
-# 5. Avaliar o agente treinado (100 episódios, métricas no terminal)
-python train_grid_world_cpp.py test
-
-# 6. Visualizar o agente treinado (1 episódio com renderização)
-python train_grid_world_cpp.py run
-
-# 7. Acompanhar o treinamento via TensorBoard
-tensorboard --logdir log/grid_world_cpp
 ```
+
+## Comandos
+
+### Avaliar os modelos treinados
+
+```powershell
+python train_grid_world_cpp.py test 5 3
+python train_grid_world_cpp.py test 10 12
+python train_grid_world_cpp.py test 20 48
+```
+
+### Visualização qualitativa de 1 episódio
+
+```powershell
+python train_grid_world_cpp.py run 5 3
+python train_grid_world_cpp.py run 10 12
+python train_grid_world_cpp.py run 20 48
+```
+
+### Re-treinar do zero (curriculum 5x5 → 10x10 → 20x20)
+
+```powershell
+$env:CPP_N_ENVS = "16"
+python train_grid_world_cpp.py curriculum 5 3 200 500000
+```
+
+Tempo estimado em CPU 16 threads: ~6h.
+
+### Curriculum interno de obstáculos no 20x20
+
+Após ter `cpp_15x15_approved.zip` em `models/`:
+
+```powershell
+python train_grid_world_cpp.py bigtwenty
+```
+
+3 sub-etapas (16 → 32 → 48 obstáculos), ~4h.
+
+### Verificação rápida com agente aleatório
+
+```powershell
+python run_grid_world_cpp.py 5 3 200 --headless
+```
+
+### Gerar gráficos do relatório
+
+```powershell
+python plot_results.py
+```
+
+Produz em `results/`:
+- `coverage_bars.png` — cobertura média por tamanho
+- `coverage_distribution.png` — distribuição por episódio
+- `obstacle_density_20x20.png` — efeito da densidade no 20x20
+- `comparison_table.csv` — tabela com todos os números
+
+## Estrutura do projeto
+
+```
+cpp_project/
+├── README.md                  Este arquivo
+├── RELATORIO.md               Relatório completo
+├── requirements.txt           Dependências Python
+├── train_grid_world_cpp.py    Script principal (treino + avaliação)
+├── run_grid_world_cpp.py      Verificação rápida com agente aleatório
+├── cpp_policy.py              CPPFeatureExtractor (CNN + MLP)
+├── plot_results.py            Geração dos gráficos
+├── gymnasium_env/
+│   ├── __init__.py
+│   └── grid_world_cpp.py      Ambiente CPP (observação Dict invariante)
+├── models/                    Modelos aprovados (.zip)
+├── results/                   CSVs de avaliação e gráficos PNG
+├── log/                       Logs do TensorBoard
+└── checkpoints/               Snapshots best-model do EvalCallback
+```
+
+## Estratégia (resumo)
+
+1. **Observação invariante ao tamanho:** `Dict` com `agent_pos` (2,) + `coverage` (1,) + `local_view` (3,3). Permite transfer learning entre 5x5/10x10/15x15/20x20 com os mesmos pesos.
+2. **RecurrentPPO + LSTM (128):** memória de curto/médio prazo para compensar a observação parcial pequena.
+3. **Recompensa modificada:** `+1.5` célula nova, `-0.4` revisita, `-0.05` step, `+25.0` cobertura completa, `-5.0` timeout. Plus `R_PINGPONG_EXTRA = -0.4` (anti-loop) e `R_FRONTIER_BONUS = +0.05` (pró-fronteira).
+4. **Curriculum:** treinar 5x5 → transferir para 10x10 → transferir para 15x15 → transferir para 20x20.
+5. **Curriculum interno de obstáculos no 20x20** (`bigtwenty`): subdivide o 20x20 em easy(16 obs) → medium(32 obs) → hard(48 obs).
+6. **Verificação BFS de solvabilidade** no `reset()`: descarta layouts impossíveis.
+
+Detalhes completos, justificativas e análise em [`RELATORIO.md`](./RELATORIO.md).
+
+## Hardware usado nos experimentos
+
+- CPU: AMD Ryzen 7 7700X (16 threads)
+- RAM: 32 GB
+- GPU: RTX 4070 (não utilizada — RecurrentPPO em CPU é mais rápido nessa escala)
+- OS: Windows 11
+- Python: 3.11.9
+
+## Algoritmo
+
+`RecurrentPPO` (sb3-contrib 2.3.0) com:
+- LSTM de 128 unidades
+- AdamW (lr=3e-4, weight_decay=1e-4)
+- 16 envs paralelos via SubprocVecEnv
+- EvalCallback + shootout best-vs-final na avaliação
+
+Justificativas em `RELATORIO.md` seção 3.

@@ -1,5 +1,45 @@
-venv
-__pycache__
-log
-data
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
 
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Backups (não commitar - são pesados e específicos do desenvolvimento)
+BACKUP_*/
+backup_run_*/
+*.bak_*.zip
+
+# Checkpoints intermediários (modelos a cada 50k steps - GBs de dados)
+checkpoints/cpp_*_step_*_steps.zip
+
+# Logs do TensorBoard (events files são pesados; CSVs com métricas já bastam)
+log/*/RecurrentPPO_*/events.out.tfevents.*
+
+# Modelos intermediários do bigtwenty (manter apenas os approved)
+models/cpp_20x20_bigtwenty_easy_*.zip
+models/cpp_20x20_bigtwenty_medium_*.zip
+models/cpp_*_bigtwentyfinal_*.zip
+models/cpp_*_bigthree_*.zip
+models/cpp_*_bigfive_*.zip
+
+# Outputs temporários
+*.tmp
+*.log
